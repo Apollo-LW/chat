@@ -1,0 +1,45 @@
+user:
+  kafka:
+    store: chat-user-state-store
+
+room:
+  kafka:
+    topic: chat-user-state-store
+
+
+chat:
+  kafka:
+    server: localhost:9092
+    topic: chat
+    replicas: 1
+    partitions: 3
+    store: chat-state-store
+    retention: -1
+    acks: all
+    retries: 10
+    requestimeout: 5000
+    batch: 163850
+    linger: 100
+    max-in-flight: 1
+    client-id: apollo-chat
+    group-id: apollo-chat-group
+    offset: latest
+
+spring:
+  kafka:
+    producer.properties.spring.json.trusted.packages: "*"
+    consumer.properties.spring.json.trusted.packages: "*"
+  cloud:
+    stream:
+      kafka:
+        streams:
+          binder:
+            application-id: apollo-chat
+      function:
+        definition: messageStateProcessor;
+        bindings:
+          messageStateProcessor-in-0.destination: chat
+          messageStateProcessor-out-0.destination: chat-state
+server:
+  port: 8083
+
