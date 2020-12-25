@@ -2,7 +2,6 @@ package com.apollo.chat.kafka;
 
 import com.apollo.chat.model.Message;
 import com.apollo.chat.model.Room;
-import lombok.extern.apachecommons.CommonsLog;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.kstream.Grouped;
 import org.apache.kafka.streams.kstream.KStream;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.util.function.Function;
 
 @Service
-@CommonsLog(topic = "Message Processor")
 public class MessageProcessor {
 
     @Value("${chat.kafka.store}")
