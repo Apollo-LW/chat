@@ -31,7 +31,7 @@ public class MessageProcessor {
                 } , Materialized.with(Serdes.String() , CustomSerdes.roomSerde()))
                 .toStream()
                 .groupByKey()
-                .reduce((value1 , value2) -> value2 , Materialized.as(this.chatStateStoreName));
+                .reduce((room , updatedRoom) -> updatedRoom , Materialized.as(this.chatStateStoreName));
     }
 
 }
