@@ -11,8 +11,6 @@ public class Message {
 
     private final String messageId = UUID.randomUUID().toString();
     private final Date messageSendAt = Calendar.getInstance().getTime();
-    private String messageParent;
-    private String messageText;
-    private String messageSenderId, messageRoomId;
+    private String messageParentId, messageSenderId, messageRoomId, messageText;
 
 }
