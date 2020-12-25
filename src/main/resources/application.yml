@@ -1,19 +1,10 @@
-user:
-  kafka:
-    store: chat-user-state-store
-
-room:
-  kafka:
-    topic: chat-user-state-store
-
-
 chat:
   kafka:
     server: localhost:9092
     topic: chat
     replicas: 1
-    partitions: 3
-    store: chat-state-store
+    partitions: 1
+    store: room-messages-state-store
     retention: -1
     acks: all
     retries: 10
@@ -26,20 +17,24 @@ chat:
     offset: latest
 
 spring:
-  kafka:
-    producer.properties.spring.json.trusted.packages: "*"
-    consumer.properties.spring.json.trusted.packages: "*"
   cloud:
+    function:
+      definition: messageStateProcessor
     stream:
       kafka:
         streams:
           binder:
             application-id: apollo-chat
-      function:
-        definition: messageStateProcessor;
-        bindings:
-          messageStateProcessor-in-0.destination: chat
-          messageStateProcessor-out-0.destination: chat-state
+            configuration:
+              spring.json.trusted.packages: '*'
+              auto.commit.interval.ms: 100
+              auto.offset.reset: latest
+              default:
+                key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value.serde: org.springframework.kafka.support.serializer.JsonSerde
+      bindings:
+        messageStateProcessor-in-0.destination: chat
+        messageStateProcessor-out-0.destination: chat-state
 server:
   port: 8083
 

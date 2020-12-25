@@ -28,8 +28,6 @@ public class KafkaConfiguration {
 
     @Value("${chat.kafka.topic}")
     private String chatTopicName;
-    @Value("${room.kafka.topic}")
-    private String roomTopicName;
     @Value("${chat.kafka.partitions}")
     private Integer chatPartition;
     @Value("${chat.kafka.replicas}")
@@ -68,16 +66,6 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    NewTopic roomTopic() {
-        return TopicBuilder
-                .name(this.roomTopicName)
-                .partitions(this.chatPartition)
-                .replicas(this.chatReplicas)
-                .config(TopicConfig.RETENTION_MS_CONFIG , this.chatRetentionPeriod)
-                .build();
-    }
-
-    @Bean
     KafkaSender chatKafkaSender() {
         final Properties chatProperties = new Properties();
         chatProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG , this.bootstrapServer);
@@ -100,13 +88,10 @@ public class KafkaConfiguration {
         chatProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG , this.bootstrapServer);
         chatProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG , StringDeserializer.class);
         chatProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG , JsonDeserializer.class);
-        chatProperties.put(ConsumerConfig.CLIENT_ID_CONFIG , this.clientId);
-        chatProperties.put(ConsumerConfig.GROUP_ID_CONFIG , this.groupId);
         chatProperties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG , true);
         chatProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG , this.offsetConfig);
 
         return new DefaultKafkaReceiver(ConsumerFactory.INSTANCE , ReceiverOptions.create(chatProperties));
     }
-
 
 }
