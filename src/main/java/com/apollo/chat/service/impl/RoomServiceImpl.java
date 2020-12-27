@@ -57,6 +57,15 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public Mono<Boolean> deleteRoomById(String roomId) {
+        Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomStateStore().get(roomId));
+        if (optionalRoom.isEmpty()) return Mono.just(false);
+        Room room = optionalRoom.get();
+        room.setIsActive(false);
+        return this.kafkaService.sendRoomRecord(Mono.just(room)).map(Optional::isPresent);
+    }
+
+    @Override
     public Mono<Boolean> addMember(Flux<String> membersIds , String roomId , String adminId) {
         Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomStateStore().get(roomId));
         if (this.isNotValid(optionalRoom , adminId)) return Mono.just(false);

@@ -15,6 +15,8 @@ public interface RoomService {
 
     Mono<Optional<Room>> getRoomById(String roomId);
 
+    Mono<Boolean> deleteRoomById(String roomId);
+
     Mono<Boolean> addMember(Flux<String> membersIds , String roomId , String adminId);
 
     Mono<Boolean> addOwners(Flux<String> ownersIds , String roomId , String adminId);

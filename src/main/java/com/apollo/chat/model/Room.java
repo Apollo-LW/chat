@@ -12,6 +12,7 @@ public class Room {
     private String roomId = UUID.randomUUID().toString(), roomName;
     private HashSet<String> roomAdmins = new HashSet<>(), roomMembers = new HashSet<>();
     private HashSet<Message> roomMessages = new HashSet<>();
+    private Boolean isActive = true;
 
     public Room addMessage(Message message) {
         this.roomMessages.add(message);
