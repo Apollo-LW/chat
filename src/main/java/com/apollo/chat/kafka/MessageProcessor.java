@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,20 +23,20 @@ public class MessageProcessor {
     private String chatStateStoreName;
     @Value("${user.kafka.store}")
     private String userRoomStateStoreName;
+    @Value("${room.kafka.store}")
+    private String roomStateStoreName;
 
     @Bean
-    public Function<KStream<String, Message>, KTable<String, Room>> messageStateProcessor() {
-        return messageKStream -> {
-            KTable<String, Room> roomKTable = messageKStream
+    public BiFunction<KStream<String, Message>, KStream<String, Room>, KTable<String, Room>> messageStateProcessor() {
+        return (messageKStream , roomKStream) -> {
+            messageKStream
                     .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.messageSerde()))
                     .aggregate(Room::new , (roomId , message , room) -> {
                         room.setRoomId(roomId);
                         return room.addMember(message.getMessageSenderId()).addMessage(message);
                     } , Materialized.with(Serdes.String() , CustomSerdes.roomSerde())).toStream()
                     .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.roomSerde()))
-                    .reduce((room , updatedRoom) -> updatedRoom , Materialized.as(this.chatStateStoreName));
-
-            roomKTable
+                    .reduce((room , updatedRoom) -> updatedRoom , Materialized.as(this.chatStateStoreName))
                     .toStream()
                     .flatMap((roomId , room) -> room.getRoomMembers().stream().map(memberId -> new KeyValue<String, Room>(memberId , room)).collect(Collectors.toSet()))
                     .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.roomSerde()))
@@ -48,7 +48,7 @@ public class MessageProcessor {
                     .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.userRoomSerde()))
                     .reduce((userRoom , updatedUserRoom) -> updatedUserRoom , Materialized.as(this.userRoomStateStoreName));
 
-            return roomKTable;
+            return roomKStream.groupByKey(Grouped.with(Serdes.String() , CustomSerdes.roomSerde())).reduce((room , updatedRoom) -> updatedRoom , Materialized.as(this.roomStateStoreName));
         };
     }
 

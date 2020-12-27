@@ -16,26 +16,26 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class KafkaService {
 
-    private final KafkaSender<String, Message> messageKafkaSender;
-    private final KafkaSender<String, Room> roomKafkaSender;
     @Value("${chat.kafka.topic}")
     private String chatTopicName;
     @Value("${room.kafka.topic}")
     private String roomTopicName;
+    private final KafkaSender<String, Room> roomKafkaSender;
+    private final KafkaSender<String, Message> messageKafkaSender;
 
     public Mono<Optional<Message>> sendMessageRecord(Mono<Message> messageMono) {
         return messageMono.flatMap(message -> this.messageKafkaSender
-                .send(Mono.just(SenderRecord.create(new ProducerRecord<>(this.chatTopicName , message.getMessageRoomId() , message) , 1)))
+                .send(Mono.just(SenderRecord.create(new ProducerRecord<>(this.chatTopicName , message.getMessageRoomId() , message) , message.getMessageRoomId())))
                 .next()
-                .map(integerSenderResult -> integerSenderResult.exception() == null ? Optional.of(message) : Optional.empty())
+                .map(senderResult -> senderResult.exception() == null ? Optional.of(message) : Optional.empty())
         );
     }
 
     public Mono<Optional<Room>> sendRoomRecord(Mono<Room> roomMono) {
         return roomMono.flatMap(room -> this.roomKafkaSender
-                .send(Mono.just(SenderRecord.create(new ProducerRecord<>(this.roomTopicName , room.getRoomId() , room) , 1)))
+                .send(Mono.just(SenderRecord.create(new ProducerRecord<>(this.roomTopicName , room.getRoomId() , room) , room.getRoomId())))
                 .next()
-                .map(integerSenderResult -> integerSenderResult.exception() == null ? Optional.of(room) : Optional.empty())
+                .map(senderResult -> senderResult.exception() == null ? Optional.of(room) : Optional.empty())
         );
     }
 
