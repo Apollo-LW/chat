@@ -2,6 +2,11 @@ user:
   kafka:
     store: user-room-state-store
 
+room:
+  kafka:
+    topic: room
+    store: room-state-store
+
 chat:
   kafka:
     server: localhost:9092
