@@ -11,6 +11,7 @@ public class UserRoom {
     private HashSet<Room> userRooms = new HashSet<>();
 
     public UserRoom addRoom(Room room) {
+        if (userRooms.contains(room)) return this;
         userRooms.add(room);
         return this;
     }

@@ -27,24 +27,28 @@ public class MessageProcessor {
     @Bean
     public Function<KStream<String, Message>, KTable<String, Room>> messageStateProcessor() {
         return messageKStream -> {
-            KStream<String, Room> roomKStream = messageKStream
+            KTable<String, Room> roomKTable = messageKStream
                     .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.messageSerde()))
-                    .aggregate(Room::new , (roomId , message , room) -> room.addMessage(message) , Materialized.with(Serdes.String() , CustomSerdes.roomSerde())).toStream();
+                    .aggregate(Room::new , (roomId , message , room) -> {
+                        room.setRoomId(roomId);
+                        return room.addMember(message.getMessageSenderId()).addMessage(message);
+                    } , Materialized.with(Serdes.String() , CustomSerdes.roomSerde())).toStream()
+                    .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.roomSerde()))
+                    .reduce((room , updatedRoom) -> updatedRoom , Materialized.as(this.chatStateStoreName));
 
-            roomKStream
+            roomKTable
+                    .toStream()
                     .flatMap((roomId , room) -> room.getRoomMembers().stream().map(memberId -> new KeyValue<String, Room>(memberId , room)).collect(Collectors.toSet()))
-                    .groupByKey()
-                    .aggregate(UserRoom::new , (key , value , aggregate) -> {
-                        aggregate.setUserId(key);
-                        return aggregate.addRoom(value);
+                    .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.roomSerde()))
+                    .aggregate(UserRoom::new , (memberId , room , userRoom) -> {
+                        userRoom.setUserId(memberId);
+                        return userRoom.addRoom(room);
                     } , Materialized.with(Serdes.String() , CustomSerdes.userRoomSerde()))
                     .toStream()
-                    .groupBy((key , value) -> value.getUserId() , Grouped.with(Serdes.String() , CustomSerdes.userRoomSerde()))
+                    .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.userRoomSerde()))
                     .reduce((userRoom , updatedUserRoom) -> updatedUserRoom , Materialized.as(this.userRoomStateStoreName));
 
-            return roomKStream
-                    .groupByKey()
-                    .reduce((room , updatedRoom) -> updatedRoom , Materialized.as(this.chatStateStoreName));
+            return roomKTable;
         };
     }
 
