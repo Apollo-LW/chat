@@ -12,8 +12,9 @@ public class Room {
     private HashSet<String> roomAdmins = new HashSet<>(), roomMembers = new HashSet<>();
     private HashSet<Message> roomMessages = new HashSet<>();
 
-    public void addMessage(Message message) {
+    public Room addMessage(Message message) {
         this.roomMessages.add(message);
+        return this;
     }
 
 }

@@ -23,10 +23,7 @@ public class MessageProcessor {
     public Function<KStream<String, Message>, KTable<String, Room>> messageStateProcessor() {
         return messageKStream -> messageKStream
                 .groupByKey(Grouped.with(Serdes.String() , CustomSerdes.messageSerde()))
-                .aggregate(Room::new , (roomId , message , room) -> {
-                    room.addMessage(message);
-                    return room;
-                } , Materialized.with(Serdes.String() , CustomSerdes.roomSerde()))
+                .aggregate(Room::new , (roomId , message , room) -> room.addMessage(message) , Materialized.with(Serdes.String() , CustomSerdes.roomSerde()))
                 .toStream()
                 .groupByKey()
                 .reduce((room , updatedRoom) -> updatedRoom , Materialized.as(this.chatStateStoreName));
