@@ -11,6 +11,8 @@ import org.springframework.cloud.stream.binder.kafka.streams.InteractiveQuerySer
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserRoomServiceImpl implements UserRoomService {
@@ -28,6 +30,8 @@ public class UserRoomServiceImpl implements UserRoomService {
 
     @Override
     public Flux<Room> getUserRooms(String userId) {
-        return Flux.fromIterable(this.getUserRoomStateStore().get(userId).getUserRooms());
+        Optional<UserRoom> optionalRoom = Optional.ofNullable(this.getUserRoomStateStore().get(userId));
+        if (optionalRoom.isEmpty()) return Flux.empty();
+        return Flux.fromIterable(optionalRoom.get().getUserRooms());
     }
 }

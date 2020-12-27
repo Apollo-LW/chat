@@ -38,6 +38,8 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Flux<Message> getMessagesByRoomId(String roomId) {
-        return Flux.fromIterable(this.getRoomReadOnlyKeyValueStore().get(roomId).getRoomMessages());
+        Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomReadOnlyKeyValueStore().get(roomId));
+        if (optionalRoom.isEmpty()) return Flux.empty();
+        return Flux.fromIterable(optionalRoom.get().getRoomMessages());
     }
 }
