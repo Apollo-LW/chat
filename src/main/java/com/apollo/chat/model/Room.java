@@ -9,7 +9,7 @@ import java.util.UUID;
 @Data
 public class Room {
 
-    private String roomId = UUID.randomUUID().toString();
+    private String roomId = UUID.randomUUID().toString(), roomName;
     private HashSet<String> roomAdmins = new HashSet<>(), roomMembers = new HashSet<>();
     private HashSet<Message> roomMessages = new HashSet<>();
 
@@ -20,6 +20,11 @@ public class Room {
 
     public Room addMember(String memberId) {
         this.roomMembers.add(memberId);
+        return this;
+    }
+
+    public Room addAdmin(String adminId) {
+        this.roomAdmins.add(adminId);
         return this;
     }
 

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping("/room")
+@RequestMapping("/chat/user")
 @RequiredArgsConstructor
 public class UserRoomController {
 

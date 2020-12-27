@@ -28,6 +28,8 @@ public class KafkaConfiguration {
 
     @Value("${chat.kafka.topic}")
     private String chatTopicName;
+    @Value("${room.kafka.topic}")
+    private String roomTopicName;
     @Value("${chat.kafka.partitions}")
     private Integer chatPartition;
     @Value("${chat.kafka.replicas}")
@@ -59,6 +61,16 @@ public class KafkaConfiguration {
     NewTopic chatTopic() {
         return TopicBuilder
                 .name(this.chatTopicName)
+                .partitions(this.chatPartition)
+                .replicas(this.chatReplicas)
+                .config(TopicConfig.RETENTION_MS_CONFIG , this.chatRetentionPeriod)
+                .build();
+    }
+
+    @Bean
+    NewTopic roomTopic() {
+        return TopicBuilder
+                .name(this.roomTopicName)
                 .partitions(this.chatPartition)
                 .replicas(this.chatReplicas)
                 .config(TopicConfig.RETENTION_MS_CONFIG , this.chatRetentionPeriod)
