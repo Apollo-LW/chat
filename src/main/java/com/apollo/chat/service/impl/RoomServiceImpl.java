@@ -70,7 +70,9 @@ public class RoomServiceImpl implements RoomService {
         Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomStateStore().get(roomId));
         if (this.isNotValid(optionalRoom , adminId)) return Mono.just(false);
         Room room = optionalRoom.get();
-        return membersIds.flatMap(memberId -> Mono.just(room.addMember(memberId) != null)).all(aBoolean -> aBoolean);
+        return membersIds.flatMap(memberId -> Mono.just(room.addMember(memberId) != null))
+                .all(aBoolean -> aBoolean)
+                .flatMap(result -> this.kafkaService.sendRoomRecord(Mono.just(room)).map(Optional::isPresent));
     }
 
     @Override
