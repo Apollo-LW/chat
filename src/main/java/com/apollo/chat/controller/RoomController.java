@@ -25,8 +25,8 @@ public class RoomController {
     }
 
     @PutMapping("/")
-    public Mono<Room> updateRoom(@RequestBody Mono<ModifyRoom> modifyRoomMono) {
-        return this.roomService.updateRoom(modifyRoomMono).flatMap(Mono::justOrEmpty);
+    public Mono<Boolean> updateRoom(@RequestBody Mono<ModifyRoom> modifyRoomMono) {
+        return this.roomService.updateRoom(modifyRoomMono);
     }
 
     @DeleteMapping("/{roomId}")
