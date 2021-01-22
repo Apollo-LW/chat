@@ -11,7 +11,7 @@ public interface RoomService {
 
     Mono<Optional<Room>> createRoom(Mono<Room> roomMono);
 
-    Mono<Optional<Room>> updateRoom(Mono<ModifyRoom> modifyRoomMono);
+    Mono<Boolean> updateRoom(Mono<ModifyRoom> modifyRoomMono);
 
     Mono<Optional<Room>> getRoomById(String roomId);
 

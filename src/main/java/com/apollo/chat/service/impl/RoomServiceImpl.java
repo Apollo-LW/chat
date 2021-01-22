@@ -41,13 +41,13 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Mono<Optional<Room>> updateRoom(Mono<ModifyRoom> modifyRoomMono) {
+    public Mono<Boolean> updateRoom(Mono<ModifyRoom> modifyRoomMono) {
         return modifyRoomMono.flatMap(modifyRoom -> {
             Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomStateStore().get(modifyRoom.getRoomId()));
             if (optionalRoom.isEmpty()) return Mono.empty();
             Room room = this.getRoomStateStore().get(modifyRoom.getRoomId());
             room.setRoomName(modifyRoom.getRoomName());
-            return this.kafkaService.sendRoomRecord(Mono.just(room));
+            return this.kafkaService.sendRoomRecord(Mono.just(room)).map(Optional::isPresent);
         });
     }
 
