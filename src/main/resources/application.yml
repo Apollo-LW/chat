@@ -28,23 +28,25 @@ chat:
 spring:
   cloud:
     function:
-      definition: messageStateProcessor;
+      definition: roomMessagesProcessorState;userRoomProcessor;roomProcessorState;
     stream:
       kafka:
         streams:
           binder:
-            application-id: apollo-chat
-            configuration:
-              spring.json.trusted.packages: '*'
-              auto.commit.interval.ms: 100
-              auto.offset.reset: latest
-              default:
-                key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
-                value.serde: org.springframework.kafka.support.serializer.JsonSerde
+            functions:
+              roomMessagesProcessorState:
+                application-id: apollo-room-message
+              userRoomProcessor:
+                application-id: apollo-room-user
+              roomProcessorState:
+                application-id: apollo-room
       bindings:
-        messageStateProcessor-in-0.destination: chat
-        messageStateProcessor-in-1.destination: room
-        messageStateProcessor-out-0.destination: room-state-store
+        roomMessagesProcessorState-in-0.destination: ${chat.kafka.topic}
+        roomMessagesProcessorState-out-0.destination: ${chat.kafka.store}
+        userRoomProcessor-in-0.destination: ${room.kafka.topic}
+        userRoomProcessor-out-0.destination: ${user.kafka.store}
+        roomProcessorState-in-0.destination: ${room.kafka.topic}
+        roomProcessorState-out-0.destination: ${room.kafka.store}
 server:
   port: 8083
 
