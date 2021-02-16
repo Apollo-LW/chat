@@ -32,12 +32,12 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Mono<Optional<Message>> sendMessage(Mono<Message> messageMono) {
+    public Mono<Optional<Message>> sendMessage(final Mono<Message> messageMono) {
         return this.kafkaService.sendMessageRecord(messageMono);
     }
 
     @Override
-    public Flux<Message> getMessagesByRoomId(String roomId) {
+    public Flux<Message> getMessagesByRoomId(final String roomId) {
         Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomReadOnlyKeyValueStore().get(roomId));
         if (optionalRoom.isEmpty()) return Flux.empty();
         return Flux.fromIterable(optionalRoom.get().getRoomMessages());

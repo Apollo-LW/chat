@@ -3,6 +3,7 @@ package com.apollo.chat.service.impl;
 import com.apollo.chat.kafka.KafkaService;
 import com.apollo.chat.model.ModifyRoom;
 import com.apollo.chat.model.Room;
+import com.apollo.chat.model.ShareRoom;
 import com.apollo.chat.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
@@ -10,7 +11,6 @@ import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.binder.kafka.streams.InteractiveQueryService;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
@@ -31,58 +31,57 @@ public class RoomServiceImpl implements RoomService {
         return this.roomStateStore;
     }
 
-    private boolean isNotValid(Optional<Room> room , String adminId) {
-        return room.isEmpty() || !room.get().getRoomAdmins().contains(adminId);
+    private boolean isNotValid(final Optional<Room> room , final String adminId) {
+        return room.isEmpty() || !room.get().getIsActive() || room.get().doesNotHaveAdmin(adminId);
     }
 
     @Override
-    public Mono<Optional<Room>> createRoom(Mono<Room> roomMono) {
+    public Mono<Optional<Room>> createRoom(final Mono<Room> roomMono) {
         return this.kafkaService.sendRoomRecord(roomMono);
     }
 
     @Override
-    public Mono<Boolean> updateRoom(Mono<ModifyRoom> modifyRoomMono) {
-        return modifyRoomMono.flatMap(modifyRoom -> {
-            Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomStateStore().get(modifyRoom.getRoomId()));
-            if (optionalRoom.isEmpty()) return Mono.empty();
-            Room room = this.getRoomStateStore().get(modifyRoom.getRoomId());
+    public Mono<Boolean> updateRoom(final Mono<ModifyRoom> modifyRoomMono) {
+        return modifyRoomMono.flatMap(modifyRoom -> this.getRoomById(modifyRoom.getRoomId()).flatMap(roomOptional -> {
+            if (this.isNotValid(roomOptional , modifyRoom.getRoomAdminId())) return Mono.just(false);
+            final Room room = roomOptional.get();
             room.setRoomName(modifyRoom.getRoomName());
+            return this.kafkaService.sendRoomRecord(Mono.just(room)).map(Optional::isPresent);
+        }));
+    }
+
+    @Override
+    public Mono<Optional<Room>> getRoomById(final String roomId) {
+        return Mono.just(Optional.ofNullable(this.getRoomStateStore().get(roomId)));
+    }
+
+    @Override
+    public Mono<Boolean> deleteRoomById(final String roomId , final String adminId) {
+        return this.getRoomById(roomId).flatMap(roomOptional -> {
+            if (this.isNotValid(roomOptional , adminId)) return Mono.just(false);
+            final Room room = roomOptional.get();
+            room.setIsActive(false);
             return this.kafkaService.sendRoomRecord(Mono.just(room)).map(Optional::isPresent);
         });
     }
 
     @Override
-    public Mono<Optional<Room>> getRoomById(String roomId) {
-        return Mono.just(Optional.ofNullable(this.getRoomStateStore().get(roomId)));
+    public Mono<Boolean> addMember(final Mono<ShareRoom> shareRoomMono) {
+        return shareRoomMono.flatMap(shareRoom -> this.getRoomById(shareRoom.getRoomId()).flatMap(roomOptional -> {
+            if (this.isNotValid(roomOptional , shareRoom.getAdminId())) return Mono.just(false);
+            final Room room = roomOptional.get();
+            Boolean isAdded = room.addMembers(shareRoom.getUserIds());
+            return this.kafkaService.sendRoomRecord(Mono.just(room)).map(updatedRoom -> updatedRoom.isPresent() && isAdded);
+        }));
     }
 
     @Override
-    public Mono<Boolean> deleteRoomById(String roomId) {
-        Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomStateStore().get(roomId));
-        if (optionalRoom.isEmpty()) return Mono.just(false);
-        Room room = optionalRoom.get();
-        room.setIsActive(false);
-        return this.kafkaService.sendRoomRecord(Mono.just(room)).map(Optional::isPresent);
-    }
-
-    @Override
-    public Mono<Boolean> addMember(Flux<String> membersIds , String roomId , String adminId) {
-        Optional<Room> optionalRoom = Optional.ofNullable(this.getRoomStateStore().get(roomId));
-        if (this.isNotValid(optionalRoom , adminId)) return Mono.just(false);
-        Room room = optionalRoom.get();
-        return membersIds.flatMap(memberId -> Mono.just(room.addMember(memberId) != null))
-                .all(aBoolean -> aBoolean)
-                .flatMap(result -> this.kafkaService.sendRoomRecord(Mono.just(room)).map(Optional::isPresent));
-    }
-
-    @Override
-    public Mono<Boolean> addOwners(Flux<String> adminsIds , String roomId , String adminId) {
-        Optional<Room> optionalRoom = Optional.ofNullable(this.roomStateStore.get(roomId));
-        if (this.isNotValid(optionalRoom , adminId)) return Mono.just(false);
-        Room room = optionalRoom.get();
-        return adminsIds.flatMap(newAdminId -> Mono.just(room.addAdmin(newAdminId) != null))
-                .all(result -> result)
-                .flatMap(result -> this.kafkaService.sendRoomRecord(Mono.just(room)).map(Optional::isPresent));
-
+    public Mono<Boolean> addAdmins(final Mono<ShareRoom> shareRoomMono) {
+        return shareRoomMono.flatMap(shareRoom -> this.getRoomById(shareRoom.getRoomId()).flatMap(roomOptional -> {
+            if (this.isNotValid(roomOptional , shareRoom.getAdminId())) return Mono.just(false);
+            final Room room = roomOptional.get();
+            Boolean isAdded = room.addAdmins(shareRoom.getUserIds());
+            return this.kafkaService.sendRoomRecord(Mono.just(room)).map(updatedRoom -> updatedRoom.isPresent() && isAdded);
+        }));
     }
 }
