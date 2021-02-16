@@ -18,7 +18,7 @@ public class UserRoomHandler {
 
     private final UserRoomService userRoomService;
 
-    public @NotNull Mono<ServerResponse> getUserRooms(ServerRequest request) {
+    public @NotNull Mono<ServerResponse> getUserRooms(final ServerRequest request) {
         final String userId = request.pathVariable(RoutingConstant.USER_ID);
         final Flux<Room> userRooms = this.userRoomService.getUserRooms(userId);
         return ServerResponse

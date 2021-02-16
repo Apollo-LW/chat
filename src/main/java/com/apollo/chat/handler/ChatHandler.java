@@ -18,16 +18,16 @@ public class ChatHandler {
 
     private final ChatService chatService;
 
-    public @NotNull Mono<ServerResponse> getRoomMessages(ServerRequest request) {
+    public @NotNull Mono<ServerResponse> getRoomMessages(final ServerRequest request) {
         final String roomId = request.pathVariable(RoutingConstant.ROOM_ID);
-        Flux<Message> messageFlux = this.chatService.getMessagesByRoomId(roomId);
+        final Flux<Message> messageFlux = this.chatService.getMessagesByRoomId(roomId);
         return ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(messageFlux , Message.class);
     }
 
-    public @NotNull Mono<ServerResponse> sendMessage(ServerRequest request) {
+    public @NotNull Mono<ServerResponse> sendMessage(final ServerRequest request) {
         final Mono<Message> messageMono = request.bodyToMono(Message.class);
         final Mono<Message> sentMessageMono = this.chatService.sendMessage(messageMono).flatMap(Mono::justOrEmpty);
         return ServerResponse

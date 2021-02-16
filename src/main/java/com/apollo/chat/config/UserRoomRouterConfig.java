@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 public class UserRoomRouterConfig {
 
     @Bean
-    public RouterFunction<ServerResponse> userRoomRoute(UserRoomHandler userRoomHandler) {
+    public RouterFunction<ServerResponse> userRoomRoute(final UserRoomHandler userRoomHandler) {
         return RouterFunctions
                 .route()
                 .path(RoutingConstant.USER_PATH , routeBuilderFunction ->
