@@ -29,7 +29,7 @@ public class UserRoomServiceImpl implements UserRoomService {
     }
 
     @Override
-    public Flux<Room> getUserRooms(String userId) {
+    public Flux<Room> getUserRooms(final String userId) {
         Optional<UserRoom> optionalRoom = Optional.ofNullable(this.getUserRoomStateStore().get(userId));
         if (optionalRoom.isEmpty()) return Flux.empty();
         return Flux.fromIterable(optionalRoom.get().getUserRooms());
