@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public interface ChatService {
 
-    Flux<Message> getMessagesByRoomId(String roomId);
+    Flux<Message> getMessagesByRoomId(final String roomId);
 
-    Mono<Optional<Message>> sendMessage(Mono<Message> messageMono);
+    Mono<Optional<Message>> sendMessage(final Mono<Message> messageMono);
 
 }

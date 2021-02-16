@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class ModifyRoom {
 
-    private String roomId, roomName;
+    private String roomId, roomAdminId, roomName;
 }

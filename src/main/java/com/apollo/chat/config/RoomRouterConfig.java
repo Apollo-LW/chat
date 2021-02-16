@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 public class RoomRouterConfig {
 
     @Bean
-    public RouterFunction<ServerResponse> roomRoute(RoomHandler roomHandler) {
+    public RouterFunction<ServerResponse> roomRoute(final RoomHandler roomHandler) {
         return RouterFunctions
                 .route()
                 .path(RoutingConstant.ROOM_PATH , routeBuilderFunction ->
@@ -22,7 +22,7 @@ public class RoomRouterConfig {
                                 .GET(RoutingConstant.ROOM_ID_PATH , roomHandler::getRoomById)
                                 .POST(roomHandler::createRoom)
                                 .PUT(roomHandler::updateRoom)
-                                .DELETE(RoutingConstant.ROOM_ID_PATH , roomHandler::deleteRoom)))
+                                .DELETE(RoutingConstant.DELETE_PATH , roomHandler::deleteRoom)))
                 .build();
     }
 

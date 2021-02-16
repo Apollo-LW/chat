@@ -5,6 +5,6 @@ import reactor.core.publisher.Flux;
 
 public interface UserRoomService {
 
-    Flux<Room> getUserRooms(String userId);
+    Flux<Room> getUserRooms(final String userId);
 
 }

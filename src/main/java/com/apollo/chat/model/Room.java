@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -19,14 +20,8 @@ public class Room {
         return this;
     }
 
-    public Room addMember(String memberId) {
-        this.roomMembers.add(memberId);
-        return this;
-    }
-
-    public Room addAdmin(String adminId) {
-        this.roomAdmins.add(adminId);
-        return this;
+    public Boolean doesNotHaveAdmin(String adminId) {
+        return !this.roomAdmins.contains(adminId);
     }
 
     @Override
@@ -35,5 +30,18 @@ public class Room {
         if (o == null || getClass() != o.getClass()) return false;
         Room room = (Room) o;
         return Objects.equals(roomId , room.roomId);
+    }
+
+    public Boolean addMembers(Set<String> membersIds) {
+        return this.roomMembers.addAll(membersIds);
+    }
+
+    public Boolean addAdmins(Set<String> adminIds) {
+        return this.roomAdmins.addAll(adminIds);
+    }
+
+    public Room addMember(String memberId) {
+        this.roomMembers.add(memberId);
+        return this;
     }
 }

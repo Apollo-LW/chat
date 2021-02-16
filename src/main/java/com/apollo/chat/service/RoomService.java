@@ -2,23 +2,23 @@ package com.apollo.chat.service;
 
 import com.apollo.chat.model.ModifyRoom;
 import com.apollo.chat.model.Room;
-import reactor.core.publisher.Flux;
+import com.apollo.chat.model.ShareRoom;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
 public interface RoomService {
 
-    Mono<Optional<Room>> createRoom(Mono<Room> roomMono);
+    Mono<Optional<Room>> createRoom(final Mono<Room> roomMono);
 
-    Mono<Boolean> updateRoom(Mono<ModifyRoom> modifyRoomMono);
+    Mono<Boolean> updateRoom(final Mono<ModifyRoom> modifyRoomMono);
 
-    Mono<Optional<Room>> getRoomById(String roomId);
+    Mono<Optional<Room>> getRoomById(final String roomId);
 
-    Mono<Boolean> deleteRoomById(String roomId);
+    Mono<Boolean> deleteRoomById(final String roomId , final String adminId);
 
-    Mono<Boolean> addMember(Flux<String> membersIds , String roomId , String adminId);
+    Mono<Boolean> addMember(final Mono<ShareRoom> shareRoomMono);
 
-    Mono<Boolean> addOwners(Flux<String> ownersIds , String roomId , String adminId);
+    Mono<Boolean> addAdmins(final Mono<ShareRoom> shareRoomMono);
 
 }

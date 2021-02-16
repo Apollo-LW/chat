@@ -23,7 +23,7 @@ public class KafkaService {
     private final KafkaSender<String, Room> roomKafkaSender;
     private final KafkaSender<String, Message> messageKafkaSender;
 
-    public Mono<Optional<Message>> sendMessageRecord(Mono<Message> messageMono) {
+    public Mono<Optional<Message>> sendMessageRecord(final Mono<Message> messageMono) {
         return messageMono.flatMap(message -> this.messageKafkaSender
                 .send(Mono.just(SenderRecord.create(new ProducerRecord<>(this.chatTopicName , message.getMessageRoomId() , message) , message.getMessageRoomId())))
                 .next()
@@ -31,7 +31,7 @@ public class KafkaService {
         );
     }
 
-    public Mono<Optional<Room>> sendRoomRecord(Mono<Room> roomMono) {
+    public Mono<Optional<Room>> sendRoomRecord(final Mono<Room> roomMono) {
         return roomMono.flatMap(room -> this.roomKafkaSender
                 .send(Mono.just(SenderRecord.create(new ProducerRecord<>(this.roomTopicName , room.getRoomId() , room) , room.getRoomId())))
                 .next()

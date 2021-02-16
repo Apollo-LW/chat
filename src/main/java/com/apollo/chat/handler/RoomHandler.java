@@ -18,7 +18,7 @@ public class RoomHandler {
 
     private final RoomService roomService;
 
-    public @NotNull Mono<ServerResponse> getRoomById(ServerRequest request) {
+    public @NotNull Mono<ServerResponse> getRoomById(final ServerRequest request) {
         final String roomId = request.pathVariable(RoutingConstant.ROOM_ID);
         final Mono<Room> roomMono = this.roomService.getRoomById(roomId).flatMap(Mono::justOrEmpty);
         return ServerResponse
@@ -27,7 +27,7 @@ public class RoomHandler {
                 .body(roomMono , Room.class);
     }
 
-    public @NotNull Mono<ServerResponse> createRoom(ServerRequest request) {
+    public @NotNull Mono<ServerResponse> createRoom(final ServerRequest request) {
         final Mono<Room> roomMono = request.bodyToMono(Room.class);
         final Mono<Room> createdRoomMono = this.roomService.createRoom(roomMono).flatMap(Mono::justOrEmpty);
         return ServerResponse
@@ -36,7 +36,7 @@ public class RoomHandler {
                 .body(createdRoomMono , Room.class);
     }
 
-    public @NotNull Mono<ServerResponse> updateRoom(ServerRequest request) {
+    public @NotNull Mono<ServerResponse> updateRoom(final ServerRequest request) {
         final Mono<ModifyRoom> modifyRoomMono = request.bodyToMono(ModifyRoom.class);
         final Mono<Boolean> isRoomUpdated = this.roomService.updateRoom(modifyRoomMono);
         return ServerResponse
@@ -45,9 +45,10 @@ public class RoomHandler {
                 .body(isRoomUpdated , Boolean.class);
     }
 
-    public @NotNull Mono<ServerResponse> deleteRoom(ServerRequest request) {
+    public @NotNull Mono<ServerResponse> deleteRoom(final ServerRequest request) {
         final String roomId = request.pathVariable(RoutingConstant.ROOM_ID);
-        final Mono<Boolean> isRoomDeleted = this.roomService.deleteRoomById(roomId);
+        final String adminId = request.pathVariable(RoutingConstant.ADMIN_ID);
+        final Mono<Boolean> isRoomDeleted = this.roomService.deleteRoomById(roomId , adminId);
         return ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)

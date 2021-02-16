@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 public class ChatRouterConfig {
 
     @Bean
-    public RouterFunction<ServerResponse> chatRoute(ChatHandler chatHandler) {
+    public RouterFunction<ServerResponse> chatRoute(final ChatHandler chatHandler) {
         return RouterFunctions
                 .route()
                 .path(RoutingConstant.CHAT_PATH , routeFunctionBuilder ->
